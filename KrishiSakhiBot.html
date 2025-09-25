@@ -1,0 +1,533 @@
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Krishi Sakhi — Kerala Farmers Assistant</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.0/lame.min.js"></script>
+</head>
+<body class="min-h-screen bg-[#0b1f14] text-white antialiased tracking-tight">
+  <!-- App Shell -->
+  <div id="chatbot-container" class="flex flex-col h-screen">
+    <!-- Header -->
+    <header class="sticky top-0 z-20 border-b border-white/10 bg-[#0d2518]/80 backdrop-blur">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 ring-1 ring-emerald-500/30">
+              <i data-lucide="sprout" class="text-emerald-400"></i>
+            </div>
+            <div class="leading-tight">
+              <h1 class="text-[18px] sm:text-[20px] font-semibold text-white">Krishi Sakhi</h1>
+              <p class="text-xs text-white/60 -mt-0.5" data-i18n="tagline">AI assistant for Kerala farmers</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <!-- Language Toggle -->
+            <button id="lang-btn" class="group inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-emerald-300 ring-1 ring-emerald-400/30 hover:ring-emerald-400/60 hover:text-emerald-200 transition-colors">
+              <i data-lucide="languages" class="w-4 h-4"></i>
+              <span>Switch to മലയാളം</span>
+            </button>
+
+            <!-- Status -->
+            <div class="hidden sm:flex items-center gap-2 rounded-md px-3 py-2 text-xs text-white/70 ring-1 ring-white/10">
+              <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-30"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <span data-i18n="statusOnline">Online</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Messages -->
+    <main class="flex-1 overflow-y-auto">
+      <div class="max-w-3xl mx-auto h-full px-4 sm:px-6">
+        <div id="chatbot-messages" class="py-6 sm:py-8 flex flex-col gap-3"></div>
+      </div>
+    </main>
+
+    <!-- Composer -->
+    <footer class="sticky bottom-0 z-10 border-t border-white/10 bg-[#0d2518]/80 backdrop-blur">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6">
+        <div class="py-3 sm:py-4">
+          <div class="flex items-end gap-2 sm:gap-3">
+            <!-- Camera -->
+            <button id="image-btn" class="shrink-0 inline-flex h-11 w-11 items-center justify-center rounded-lg bg-white/5 ring-1 ring-white/10 hover:bg-white/10 hover:ring-white/20 transition">
+              <i data-lucide="camera" class="w-5 h-5 text-white/90"></i>
+            </button>
+
+            <!-- Hidden file input (fallback + gallery) -->
+            <input id="image-input" type="file" accept="image/*" capture="environment" class="hidden">
+
+            <!-- Input -->
+            <div class="flex-1 relative">
+              <input id="chat-input" type="text" placeholder="Type your message..." class="w-full h-11 rounded-lg bg-white/5 ring-1 ring-white/10 focus:ring-emerald-400/40 focus:outline-none text-white placeholder-white/40 px-4 pr-12 transition">
+              <!-- Mic (inside input on md+) -->
+              <button id="voice-btn" class="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 items-center justify-center rounded-md bg-emerald-500/10 ring-1 ring-emerald-400/30 hover:bg-emerald-500/20 hover:ring-emerald-400/50 transition">
+                <i data-lucide="mic" class="w-4 h-4 text-emerald-300"></i>
+              </button>
+            </div>
+
+            <!-- Mic (mobile) -->
+            <button id="voice-btn-mobile" class="md:hidden shrink-0 inline-flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-500/10 ring-1 ring-emerald-400/30 hover:bg-emerald-500/20 hover:ring-emerald-400/50 transition">
+              <i data-lucide="mic" class="w-5 h-5 text-emerald-300"></i>
+            </button>
+
+            <!-- Send -->
+            <button id="send-btn" class="shrink-0 inline-flex h-11 px-4 items-center justify-center gap-2 rounded-lg bg-emerald-500 text-[#0b1f14] font-medium ring-1 ring-emerald-400/60 hover:bg-emerald-400 hover:ring-emerald-300 transition">
+              <i data-lucide="send" class="w-4 h-4"></i>
+              <span class="hidden sm:inline" data-i18n="send">Send</span>
+            </button>
+          </div>
+
+          <!-- Hints -->
+          <div class="mt-3 flex flex-wrap gap-2 text-xs text-white/60">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 ring-1 ring-white/10">
+              <i data-lucide="mic" class="w-3.5 h-3.5 text-emerald-300"></i>
+              <span data-i18n="hintHoldToSpeak">Hold to speak</span>
+            </span>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 ring-1 ring-white/10">
+              <i data-lucide="camera" class="w-3.5 h-3.5 text-emerald-300"></i>
+              <span data-i18n="hintCaptureCropPest">Capture crop/pest</span>
+            </span>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 ring-1 ring-white/10">
+              <i data-lucide="languages" class="w-3.5 h-3.5 text-emerald-300"></i>
+              <span data-i18n="hintLangPair">English / Malayalam</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Camera Modal -->
+  <div id="camera-modal" class="fixed inset-0 z-30 hidden items-center justify-center p-4 bg-black/70">
+    <div class="w-full max-w-md rounded-xl bg-[#0b1f14] ring-1 ring-white/10 overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
+        <div class="flex items-center gap-2">
+          <i data-lucide="camera" class="w-4 h-4 text-emerald-300"></i>
+          <p class="text-sm font-medium text-white" data-i18n="cameraTitle">Camera</p>
+        </div>
+        <button id="camera-close" class="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-white/5 ring-1 ring-white/10 hover:ring-white/20 transition">
+          <i data-lucide="x" class="w-4 h-4 text-white/80"></i>
+        </button>
+      </div>
+      <div class="p-4 space-y-3">
+        <div class="rounded-lg overflow-hidden ring-1 ring-white/10 bg-black">
+          <video id="camera-stream" autoplay="" playsinline="" muted="" class="w-full h-64 object-cover bg-black"></video>
+          <canvas id="camera-canvas" class="hidden"></canvas>
+        </div>
+        <div class="flex items-center justify-between">
+          <button id="switch-camera" class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm text-white/80 ring-1 ring-white/10 hover:bg-white/5 hover:ring-white/20 transition">
+            <i data-lucide="refresh-ccw" class="w-4 h-4"></i>
+            <span data-i18n="cameraSwitch">Switch</span>
+          </button>
+          <div class="flex items-center gap-2">
+            <button id="camera-capture" class="inline-flex items-center gap-2 rounded-md bg-emerald-500 text-[#0b1f14] px-4 py-2 text-sm font-medium ring-1 ring-emerald-400/60 hover:bg-emerald-400 hover:ring-emerald-300 transition">
+              <i data-lucide="aperture" class="w-4 h-4"></i>
+              <span data-i18n="cameraCapture">Capture</span>
+            </button>
+            <button id="camera-use-file" class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm text-white/80 ring-1 ring-white/10 hover:bg-white/5 hover:ring-white/20 transition">
+              <i data-lucide="image-up" class="w-4 h-4"></i>
+              <span data-i18n="cameraGallery">Gallery</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Templates and Utilities -->
+  <template id="msg-user">
+    <div class="flex justify-end">
+      <div class="max-w-[85%] sm:max-w-[70%] group">
+        <div class="text-[13px] text-white/50 mb-1 pr-1 text-right" data-i18n="labelYou">You</div>
+        <div class="relative rounded-2xl bg-emerald-500 text-[#0b1f14] ring-1 ring-emerald-400/60 px-4 py-2.5 shadow-sm">
+          <p class="text-[15px] leading-relaxed"></p>
+          <div class="absolute -right-1.5 -bottom-1.5 h-3 w-3 bg-emerald-500 rotate-45"></div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="msg-bot">
+    <div class="flex items-start gap-3">
+      <div class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/10 ring-1 ring-emerald-400/30">
+        <i data-lucide="bot" class="w-4 h-4 text-emerald-300"></i>
+      </div>
+      <div class="max-w-[85%] sm:max-w-[70%]">
+        <div class="text-[13px] text-white/50 mb-1" data-i18n="labelBot">Krishi Sakhi</div>
+        <div class="rounded-2xl bg-white/5 ring-1 ring-white/10 px-4 py-2.5">
+          <p class="text-[15px] leading-relaxed text-white"></p>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="msg-typing">
+    <div class="flex items-start gap-3">
+      <div class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/10 ring-1 ring-emerald-400/30">
+        <i data-lucide="bot" class="w-4 h-4 text-emerald-300"></i>
+      </div>
+      <div class="max-w-[85%] sm:max-w-[70%]">
+        <div class="text-[13px] text-white/50 mb-1" data-i18n="labelBot">Krishi Sakhi</div>
+        <div class="rounded-2xl bg-white/5 ring-1 ring-white/10 px-4 py-2.5">
+          <div class="flex items-center gap-2">
+            <span class="inline-block h-2 w-2 rounded-full bg-white/40 animate-bounce"></span>
+            <span class="inline-block h-2 w-2 rounded-full bg-white/40 animate-bounce [animation-delay:120ms]"></span>
+            <span class="inline-block h-2 w-2 rounded-full bg-white/40 animate-bounce [animation-delay:240ms]"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    // Init icons
+    function mountIcons() {
+      lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
+    }
+    document.addEventListener('DOMContentLoaded', mountIcons);
+
+    // Webhook URL (as requested)
+    const webhookUrl = "https://its1322me.app.n8n.cloud/webhook/3afa8e65-e8f2-4361-b796-218f1cecdea1";
+
+    // Elements
+    const messagesDiv = document.getElementById("chatbot-messages");
+    const sendBtn = document.getElementById("send-btn");
+    const input = document.getElementById("chat-input");
+    const imageBtn = document.getElementById("image-btn");
+    const imageInput = document.getElementById("image-input");
+    const langBtn = document.getElementById("lang-btn");
+    const voiceBtnDesktop = document.getElementById("voice-btn");
+    const voiceBtnMobile = document.getElementById("voice-btn-mobile");
+
+    // Camera modal
+    const cameraModal = document.getElementById("camera-modal");
+    const cameraClose = document.getElementById("camera-close");
+    const cameraStreamEl = document.getElementById("camera-stream");
+    const cameraCanvas = document.getElementById("camera-canvas");
+    const cameraCapture = document.getElementById("camera-capture");
+    const cameraUseFile = document.getElementById("camera-use-file");
+    const switchCamera = document.getElementById("switch-camera");
+
+    // i18n dictionary
+    const translations = {
+      en: {
+        tagline: "AI assistant for Kerala farmers",
+        statusOnline: "Online",
+        inputPlaceholder: "Type your message...",
+        send: "Send",
+        hintHoldToSpeak: "Hold to speak",
+        hintCaptureCropPest: "Capture crop/pest",
+        hintLangPair: "English / Malayalam",
+        cameraTitle: "Camera",
+        cameraSwitch: "Switch",
+        cameraCapture: "Capture",
+        cameraGallery: "Gallery",
+        labelYou: "You",
+        labelBot: "Krishi Sakhi",
+        langSwitchTo: "Switch to മലയാളം",
+        audioPlaying: "Audio reply playing...",
+        errorPrefix: "Error: ",
+        micErrorPrefix: "Mic error: ",
+        noReply: "No reply received."
+      },
+      ml: {
+        tagline: "കേരളത്തെ കർഷകർക്ക് വേണ്ടി AI സഹായി",
+        statusOnline: "ഓൺലൈൻ",
+        inputPlaceholder: "നിങ്ങളുടെ സന്ദേശം ടൈപ്പ് ചെയ്യുക...",
+        send: "അയയ്ക്കുക",
+        hintHoldToSpeak: "സംസാരിക്കാൻ അമർത്തി പിടിക്കുക",
+        hintCaptureCropPest: "വിള/കീടം പകർത്തുക",
+        hintLangPair: "ഇംഗ്ലീഷ് / മലയാളം",
+        cameraTitle: "ക്യാമറ",
+        cameraSwitch: "മാറ്റുക",
+        cameraCapture: "പകർത്തുക",
+        cameraGallery: "ഗാലറി",
+        labelYou: "നിങ്ങൾ",
+        labelBot: "കൃഷി സഖി",
+        langSwitchTo: "Switch to English",
+        audioPlaying: "ഓഡിയോ മറുപടി പ്ലേ ചെയ്യുന്നു...",
+        errorPrefix: "പിശക്: ",
+        micErrorPrefix: "മൈക്ക് പിശക്: ",
+        noReply: "മറുപടി ലഭിച്ചില്ല."
+      }
+    };
+
+    function t(key) {
+      return (translations[currentLang] && translations[currentLang][key]) || key;
+    }
+
+    function updateI18n() {
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        const value = t(key);
+        if (value) el.textContent = value;
+      });
+      input.placeholder = t("inputPlaceholder");
+
+      // Update language toggle label
+      const label = langBtn.querySelector('span');
+      if (label) label.textContent = t("langSwitchTo");
+    }
+
+    // State
+    let currentLang = "en";
+    let isFirstGreeting = true;
+    let userId = 'user_' + Math.random().toString(36).substr(2, 9);
+    let mediaRecorder, audioChunks = [];
+    let isRecording = false;
+    let streamForCamera = null;
+    let useRearCamera = true;
+
+    const initialEn = "Hello! I'm Krishi Sakhi. You can ask me about crops, pests, weather, irrigation, or schemes. You can also send photos and speak in Malayalam or English.";
+    const initialMl = "ഹലോ! ഞാൻ കൃഷി സഖി. വിളകൾ, കീടങ്ങൾ, കാലാവസ്ഥ, ജലസേചനം, സ്കീമുകൾ എന്നിവയെക്കുറിച്ച് ചോദിക്കാം. ഫോട്ടോ അയക്കാനും ഇംഗ്ലീഷ്/മലയാളം സംസാരിക്കാനും കഴിയും.";
+
+    // Helpers
+    function elFromTemplate(id) {
+      return document.getElementById(id).content.firstElementChild.cloneNode(true);
+    }
+
+    function addMessage(text, sender = "bot") {
+      let node;
+      if (sender === "user") {
+        node = elFromTemplate('msg-user');
+      } else {
+        node = elFromTemplate('msg-bot');
+      }
+      node.querySelector('p').textContent = text;
+      messagesDiv.appendChild(node);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      updateI18n();
+      mountIcons();
+    }
+
+    function addTyping() {
+      const node = elFromTemplate('msg-typing');
+      messagesDiv.appendChild(node);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      updateI18n();
+      mountIcons();
+      return node;
+    }
+
+    function setLanguageUI() {
+      updateI18n();
+    }
+
+    // Send message to webhook
+    async function sendMessage(type, content) {
+      // User bubble
+      addMessage(type === "text" ? content : `[${type} sent]`, "user");
+
+      // Typing indicator
+      const typingNode = addTyping();
+
+      try {
+        const res = await fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type, message: content, lang: currentLang, userId })
+        });
+
+        // Remove typing
+        typingNode.remove();
+
+        // If server replies with audio binary
+        const ctype = res.headers.get("content-type") || "";
+        if (ctype.includes("audio")) {
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const audio = new Audio(url);
+          audio.play().catch(() => {});
+          addMessage(t("audioPlaying"), "bot");
+          return;
+        }
+
+        const data = await res.json().catch(() => ({}));
+        const replyText = data.reply || t("noReply");
+        addMessage(replyText, "bot");
+      } catch (err) {
+        typingNode.remove();
+        addMessage(t("errorPrefix") + err.message, "bot");
+      }
+    }
+
+    // Events
+    sendBtn.addEventListener("click", () => {
+      const value = input.value.trim();
+      if (!value) return;
+      sendMessage("text", value);
+      input.value = "";
+    });
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const value = input.value.trim();
+        if (!value) return;
+        sendMessage("text", value);
+        input.value = "";
+      }
+    });
+
+    langBtn.addEventListener("click", () => {
+      currentLang = currentLang === "en" ? "ml" : "en";
+      setLanguageUI();
+    });
+
+    // Image/gallery fallback
+    imageInput.addEventListener("change", () => {
+      const file = imageInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => sendMessage("image", reader.result);
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Camera handling
+    function closeCamera() {
+      cameraModal.classList.add("hidden");
+      if (streamForCamera) {
+        streamForCamera.getTracks().forEach(t => t.stop());
+        streamForCamera = null;
+      }
+    }
+
+    async function openCamera() {
+      try {
+        cameraModal.classList.remove("hidden");
+        const constraints = {
+          video: { facingMode: useRearCamera ? { ideal: "environment" } : "user" },
+          audio: false
+        };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        streamForCamera = stream;
+        cameraStreamEl.srcObject = stream;
+      } catch (e) {
+        // Fallback to gallery
+        imageInput.click();
+      }
+    }
+
+    imageBtn.addEventListener("click", openCamera);
+    cameraClose.addEventListener("click", closeCamera);
+
+    switchCamera.addEventListener("click", async () => {
+      useRearCamera = !useRearCamera;
+      if (streamForCamera) {
+        streamForCamera.getTracks().forEach(t => t.stop());
+      }
+      await openCamera();
+    });
+
+    cameraUseFile.addEventListener("click", () => {
+      imageInput.click();
+    });
+
+    cameraCapture.addEventListener("click", () => {
+      if (!streamForCamera) return;
+      const video = cameraStreamEl;
+      const canvas = cameraCanvas;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      closeCamera();
+      sendMessage("image", dataUrl);
+    });
+
+    // Voice recording (Desktop + Mobile)
+    async function startRecording(btn) {
+      try {
+        if (isRecording) return;
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        isRecording = true;
+
+        // UI: recording state
+        btn.classList.add("ring-2", "ring-emerald-400", "animate-pulse");
+        btn.innerHTML = '<i data-lucide="square" class="w-4 h-4 text-emerald-300"></i>';
+        mountIcons();
+
+        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+          const arrayBuffer = await audioBlob.arrayBuffer();
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+          const channelData = audioBuffer.getChannelData(0);
+          const samples = new Int16Array(channelData.length);
+          for (let i = 0; i < channelData.length; i++) samples[i] = channelData[i] * 0x7FFF;
+
+          const mp3encoder = new lamejs.Mp3Encoder(1, audioBuffer.sampleRate, 128);
+          const mp3Data = [];
+          const sampleBlockSize = 1152;
+          for (let i = 0; i < samples.length; i += sampleBlockSize) {
+            const chunk = samples.subarray(i, i + sampleBlockSize);
+            const mp3buf = mp3encoder.encodeBuffer(chunk);
+            if (mp3buf.length > 0) mp3Data.push(mp3buf);
+          }
+          const mp3buf = mp3encoder.flush();
+          if (mp3buf.length > 0) mp3Data.push(mp3buf);
+
+          const mp3Blob = new Blob(mp3Data, { type: "audio/mp3" });
+          const reader = new FileReader();
+          reader.onloadend = () => sendMessage("voice", reader.result);
+          reader.readAsDataURL(mp3Blob);
+
+          stream.getTracks().forEach(track => track.stop());
+          btn.classList.remove("ring-2", "ring-emerald-400", "animate-pulse");
+          btn.innerHTML = '<i data-lucide="mic" class="w-4 h-4 text-emerald-300"></i>';
+          mountIcons();
+          isRecording = false;
+        };
+
+        mediaRecorder.start();
+      } catch (err) {
+        addMessage(t("micErrorPrefix") + err.message, "bot");
+        btn.classList.remove("ring-2", "ring-emerald-400", "animate-pulse");
+        btn.innerHTML = '<i data-lucide="mic" class="w-4 h-4 text-emerald-300"></i>';
+        mountIcons();
+        isRecording = false;
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state !== "inactive" && isRecording) {
+        mediaRecorder.stop();
+      }
+    }
+
+    // Bind both mic buttons with hold-to-record UX
+    const micButtons = [voiceBtnDesktop, voiceBtnMobile].filter(Boolean);
+    micButtons.forEach((btn) => {
+      // Mouse
+      btn.addEventListener("mousedown", () => startRecording(btn));
+      btn.addEventListener("mouseup", stopRecording);
+      btn.addEventListener("mouseleave", stopRecording);
+      // Touch
+      btn.addEventListener("touchstart", (e) => { e.preventDefault(); startRecording(btn); }, { passive: false });
+      btn.addEventListener("touchend", stopRecording);
+      btn.addEventListener("touchcancel", stopRecording);
+    });
+
+    // Initial greeting
+    window.addEventListener("DOMContentLoaded", () => {
+      setLanguageUI();
+      if (isFirstGreeting) {
+        addMessage(currentLang === 'en' ? initialEn : initialMl, "bot");
+        isFirstGreeting = false;
+      }
+    });
+  </script>
+
+</body></html>
